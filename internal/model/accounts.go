@@ -20,8 +20,7 @@ func (a *Account) TableName() string {
 
 // Register struct is used to register a new account
 type Register struct {
-	AccountNumber string `json:"account_number" validate:"required,numeric"`
-	Name          string `json:"name" validate:"required,min=3,max=100"`
-	NIK           string `json:"nik" validate:"required,numeric,len=16"`
-	Phone         string `json:"phone" validate:"required,numeric,min=10,max=13"`
+	Name  string `json:"name" validate:"required,min=3,max=100"`
+	NIK   string `json:"nik" validate:"required,numeric,len=16"`
+	Phone string `json:"phone" validate:"required,numeric,min=10,max=13"`
 }
