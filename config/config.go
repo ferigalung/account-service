@@ -3,7 +3,8 @@ package config
 import (
 	"os"
 
-	"github.com/gofiber/fiber/v2/log"
+	"github.com/ferigalung/account-service/pkg/logger"
+	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 )
 
@@ -29,7 +30,7 @@ type AppConfig struct {
 func LoadConfig() *AppConfig {
 	err := godotenv.Load()
 	if err != nil {
-		log.Errorf("Failed to load environment variable: error:%s", err.Error())
+		logger.Log("error", "Failed to load .env file", fiber.Map{"error": err.Error()})
 	}
 
 	return &AppConfig{
