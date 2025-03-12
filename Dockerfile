@@ -44,5 +44,4 @@ RUN chown -R appuser:appgroup /app
 # Set the user to appuser
 USER appuser
 
-EXPOSE 3000
 CMD ["./main"]
