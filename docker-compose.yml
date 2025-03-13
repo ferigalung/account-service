@@ -1,0 +1,49 @@
+networks:
+  ihsan-solusi:
+     driver: bridge
+
+services:
+  account-service:
+    build: .
+    container_name: account-service
+    command: ["/app/main", "-port=${APP_PORT}"]
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    networks: 
+      - ihsan-solusi
+    environment:
+      - BASIC_USER=${BASIC_USER}
+      - BASIC_PASS=${BASIC_PASS}
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    networks:
+      - ihsan-solusi
+    restart: always
+    ports: 
+      - ${DB_PORT}:${DB_PORT}
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+      PGPORT: ${DB_PORT}
+    volumes:
+      - pgdata:/var/lib/postgresql/data 
+
+  adminer:
+    image: adminer
+    networks:
+      - ihsan-solusi
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  pgdata:

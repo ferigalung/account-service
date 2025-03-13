@@ -7,20 +7,27 @@ import (
 	id_translations "github.com/go-playground/validator/v10/translations/id"
 )
 
-// Validator is a custom validator for the application
-type Validator struct {
+type ValidatorImpl struct {
 	validator *vldtr.Validate
-	Trans     ut.Translator
+	trans     ut.Translator
+}
+
+func NewValidator() *ValidatorImpl {
+	validator := vldtr.New()
+	idLocale := id.New()
+	uni := ut.New(idLocale, idLocale)
+	trans, _ := uni.GetTranslator("id")
+
+	// Register default indonesian translations
+	id_translations.RegisterDefaultTranslations(validator, trans)
+
+	return &ValidatorImpl{
+		validator: validator,
+		trans:     trans,
+	}
 }
 
 // Validate function validates the input data
-func (cv *Validator) Validate(i interface{}) error {
-	idLocale := id.New()
-	uni := ut.New(idLocale, idLocale)
-	cv.Trans, _ = uni.GetTranslator("id")
-
-	// Register the validator
-	id_translations.RegisterDefaultTranslations(cv.validator, cv.Trans)
-
-	return cv.validator.Struct(i)
+func (cv *ValidatorImpl) Validate(data interface{}) error {
+	return cv.validator.Struct(data)
 }
