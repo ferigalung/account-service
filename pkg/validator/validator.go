@@ -1,10 +1,13 @@
 package validator
 
 import (
-	"github.com/go-playground/locales/id"
+	"errors"
+	"strings"
+
+	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	vldtr "github.com/go-playground/validator/v10"
-	id_translations "github.com/go-playground/validator/v10/translations/id"
+	en_translations "github.com/go-playground/validator/v10/translations/en"
 )
 
 type ValidatorImpl struct {
@@ -14,12 +17,12 @@ type ValidatorImpl struct {
 
 func NewValidator() *ValidatorImpl {
 	validator := vldtr.New()
-	idLocale := id.New()
-	uni := ut.New(idLocale, idLocale)
-	trans, _ := uni.GetTranslator("id")
+	enLocale := en.New()
+	uni := ut.New(enLocale, enLocale)
+	trans, _ := uni.GetTranslator("en")
 
-	// Register default indonesian translations
-	id_translations.RegisterDefaultTranslations(validator, trans)
+	// Register default english translations
+	en_translations.RegisterDefaultTranslations(validator, trans)
 
 	return &ValidatorImpl{
 		validator: validator,
@@ -29,5 +32,18 @@ func NewValidator() *ValidatorImpl {
 
 // Validate function validates the input data
 func (cv *ValidatorImpl) Validate(data interface{}) error {
-	return cv.validator.Struct(data)
+
+	var msgs string
+	err := cv.validator.Struct(data)
+	if err != nil {
+		for idx, e := range err.(vldtr.ValidationErrors) {
+			if idx > 0 && idx < len(err.(vldtr.ValidationErrors)) {
+				msgs = msgs + ", "
+			}
+
+			msgs = msgs + strings.ToLower(e.Translate(cv.trans))
+		}
+		return errors.New(msgs)
+	}
+	return nil
 }

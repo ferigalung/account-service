@@ -1,4 +1,4 @@
-package model
+package balances
 
 import "time"
 

@@ -2,8 +2,10 @@ package logger
 
 import (
 	"encoding/json"
+	"runtime"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 )
 
@@ -14,7 +16,18 @@ type LogData struct {
 	Context interface{} `json:"context,omitempty"`
 }
 
-func Log(level string, message string, ctx interface{}) {
+func getCallerFuncName() string {
+	pc, _, _, ok := runtime.Caller(2) // Ambil caller dari dua level atas
+	if !ok {
+		return "unknown"
+	}
+	return runtime.FuncForPC(pc).Name()
+}
+
+func Log(level string, message string, ctx fiber.Map) {
+	if ctx != nil {
+		ctx["function"] = getCallerFuncName()
+	}
 	data := LogData{
 		Time:    time.Now().Format(time.RFC3339),
 		Level:   level,

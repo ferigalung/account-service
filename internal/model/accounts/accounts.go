@@ -1,4 +1,4 @@
-package model
+package accounts
 
 import "time"
 
@@ -23,4 +23,10 @@ type Register struct {
 	Name  string `json:"name" validate:"required,min=3,max=100"`
 	NIK   string `json:"nik" validate:"required,numeric,len=16"`
 	Phone string `json:"phone" validate:"required,numeric,min=10,max=13"`
+}
+
+// UniqueAccount params to check is data unique
+type UniqueAccount struct {
+	NIK   string `json:"nik" db:"name"`
+	Phone string `json:"phone" db:"phone"`
 }

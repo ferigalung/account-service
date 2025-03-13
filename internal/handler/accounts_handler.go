@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/ferigalung/account-service/internal/model"
+	"github.com/ferigalung/account-service/internal/model/accounts"
 	"github.com/ferigalung/account-service/internal/service"
 	cv "github.com/ferigalung/account-service/pkg/validator"
 	"github.com/gofiber/fiber/v2"
@@ -17,24 +17,44 @@ func NewAccountHandler(svc *service.AccountService, cv *cv.ValidatorImpl) *Accou
 }
 
 func (h *AccountHandler) CreateAccount(c *fiber.Ctx) error {
-	var payload model.Register
+	var payload accounts.Register
 
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request",
+			"status":  "error",
+			"data":    nil,
+			"message": "Invalid request body",
 		})
 	}
 
 	if err := h.validator.Validate(payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
+			"status":  "error",
+			"data":    nil,
+			"message": err.Error(),
 		})
 	}
 
 	account, err := h.service.CreateAccount(c.Context(), payload)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Account not found"})
+		if err.Error() == "NIK or phone number already registered" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"status":  "error",
+				"data":    nil,
+				"message": err.Error(),
+			})
+		}
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"data":    nil,
+			"message": err.Error(),
+		})
 	}
 
-	return c.JSON(account)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status":  "success",
+		"data":    account,
+		"message": "Successfully create new account",
+	})
 }

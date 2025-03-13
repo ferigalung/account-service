@@ -24,7 +24,7 @@ import (
 
 func main() {
 	// set default service port, can be overrided by argumen parser
-	port := flag.Int("port", 3000, "REST API Port")
+	port := flag.Int("port", 9000, "REST API Port")
 	flag.Parse()
 
 	// load env
@@ -55,7 +55,7 @@ func main() {
 
 	// routes
 	g := app.Group("/api/v1")
-	g.Post("/register", accountHandler.CreateAccount)
+	g.Post("/daftar", accountHandler.CreateAccount)
 
 	// graceful shutdown
 	sig := make(chan os.Signal, 1)
