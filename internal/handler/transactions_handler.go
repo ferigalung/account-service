@@ -160,7 +160,7 @@ func (h *TransactionHandler) GetTrxHistory(c *fiber.Ctx) error {
 	}
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.UTC().Location())
-	if startDate.After(today) || endDate.After(today) {
+	if (startDate != nil && startDate.After(today)) || (endDate != nil && endDate.After(today)) {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
 			"data":    nil,
