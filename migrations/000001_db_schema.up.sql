@@ -15,10 +15,12 @@ CREATE TABLE accounts (
 CREATE TABLE balances (
     id SERIAL PRIMARY KEY,
     account_id INT NOT NULL REFERENCES accounts(id),
-    balance DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    balance DECIMAL(15, 2) NOT NULL CHECK >= 0 DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE balances
+ADD CONSTRAINT check_balance CHECK (balance >= 0)
 
 CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,

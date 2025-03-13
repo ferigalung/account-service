@@ -36,7 +36,7 @@ func main() {
 	})
 
 	// middleware
-	app.Use(recover.New())
+	app.Use(recover.New(recover.Config{EnableStackTrace: true}))
 	app.Use(healthcheck.New())
 	app.Use(basicauth.New(basicauth.Config{
 		Users: map[string]string{
@@ -52,10 +52,19 @@ func main() {
 	accountRepo := repository.NewAccountRepository(db)
 	accountService := service.NewAccountService(accountRepo)
 	accountHandler := handler.NewAccountHandler(accountService, validator)
+	balanceRepo := repository.NewBalanceRepository(db)
+	balanceService := service.NewBalanceService(balanceRepo)
+	balanceHandler := handler.NewBalanceHandler(balanceService, validator)
+	transactionRepo := repository.NewTransactionRepository(db)
+	transactionService := service.NewTransactionService(transactionRepo, accountRepo, balanceRepo)
+	transactionHandler := handler.NewTransactionHandler(transactionService, validator)
 
 	// routes
 	g := app.Group("/api/v1")
 	g.Post("/daftar", accountHandler.CreateAccount)
+	g.Put("/tabung", transactionHandler.Deposit)
+	g.Put("/tarik", transactionHandler.Withdraw)
+	g.Get("/saldo/:an", balanceHandler.GetBalance)
 
 	// graceful shutdown
 	sig := make(chan os.Signal, 1)

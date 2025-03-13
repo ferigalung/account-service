@@ -30,8 +30,8 @@ func (r *AccountRepository) GetUniqueAccount(ctx context.Context, params account
 
 func (r *AccountRepository) GetAccountByAccountNumber(ctx context.Context, accountNumber string) (*accountModel.Account, error) {
 	var account accountModel.Account
-	query := fmt.Sprintf("SELECT * FROM %s WHERE account_number $1", account.TableName())
-	if err := pgxscan.Select(ctx, r.db, &account, query, accountNumber); err != nil {
+	query := fmt.Sprintf("SELECT * FROM %s WHERE account_number = $1", account.TableName())
+	if err := pgxscan.Get(ctx, r.db, &account, query, accountNumber); err != nil {
 		return nil, err
 	}
 

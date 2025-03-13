@@ -43,7 +43,6 @@ func generateAccountNumber() string {
 func (s *AccountService) CreateAccount(ctx context.Context, payload accountModel.Register) (*accountModel.Account, error) {
 	params := accountModel.UniqueAccount{NIK: payload.NIK, Phone: payload.Phone}
 	account, err := s.repo.GetUniqueAccount(ctx, params)
-	fmt.Println(pgxscan.NotFound(err))
 	if err != nil && !pgxscan.NotFound(err) {
 		logger.Log("error", "Failed to get account", fiber.Map{"error": err.Error()})
 		return nil, err
@@ -62,6 +61,7 @@ func (s *AccountService) CreateAccount(ctx context.Context, payload accountModel
 		Phone:         payload.Phone,
 	})
 	if err != nil {
+		logger.Log("error", "Failed to insert account", fiber.Map{"error": err.Error()})
 		return nil, err
 	}
 
