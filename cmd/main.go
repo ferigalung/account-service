@@ -42,6 +42,13 @@ func main() {
 		Users: map[string]string{
 			cfg.BasicAuth.Username: cfg.BasicAuth.Password,
 		},
+		Unauthorized: func(c *fiber.Ctx) error {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"status":  "error",
+				"data":    nil,
+				"message": "Unauthorized access",
+			})
+		},
 	}))
 
 	// helper init
@@ -65,6 +72,7 @@ func main() {
 	g.Put("/tabung", transactionHandler.Deposit)
 	g.Put("/tarik", transactionHandler.Withdraw)
 	g.Get("/saldo/:an", balanceHandler.GetBalance)
+	g.Get("/mutasi/:an", transactionHandler.GetTrxHistory)
 
 	// graceful shutdown
 	sig := make(chan os.Signal, 1)

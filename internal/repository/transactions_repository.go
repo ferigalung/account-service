@@ -7,6 +7,7 @@ import (
 
 	"github.com/ferigalung/account-service/internal/model/balances"
 	trxModel "github.com/ferigalung/account-service/internal/model/transactions"
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -52,4 +53,45 @@ func (r *TransactionRepository) CreateTransaction(ctx context.Context, doc trxMo
 	}
 
 	return &balances.Balance, nil
+}
+
+func (r *TransactionRepository) GetTransactions(ctx context.Context, params trxModel.ListPayload) (trxModel.ListRepo, error) {
+	var trx trxModel.Transaction
+	var trxList []trxModel.Transaction
+	var totalRecords int64
+
+	query := fmt.Sprintf("SELECT * FROM %s WHERE account_id = $1", trx.TableName())
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE account_id = $1", trx.TableName())
+	args := []interface{}{}
+	args = append(args, params.AccountID)
+	argIdx := 2
+
+	if params.StartDate != nil {
+		query += fmt.Sprintf(" AND created_at >= $%d", argIdx)
+		countQuery += fmt.Sprintf(" AND created_at >= $%d", argIdx)
+		args = append(args, *params.StartDate)
+		argIdx++
+	}
+	if params.EndDate != nil {
+		query += fmt.Sprintf(" AND created_at <= $%d", argIdx)
+		countQuery += fmt.Sprintf(" AND created_at <= $%d", argIdx)
+		args = append(args, *params.EndDate)
+		argIdx++
+	}
+	query += fmt.Sprintf(" ORDER BY created_at DESC LIMIT $%d OFFSET $%d", argIdx, argIdx+1)
+	args = append(args, params.Size)
+	args = append(args, (params.Page-1)*params.Size)
+
+	if err := pgxscan.Select(ctx, r.db, &trxList, query, args...); err != nil {
+		return trxModel.ListRepo{}, err
+	}
+	if err := pgxscan.Get(ctx, r.db, &totalRecords, countQuery, args[:len(args)-2]...); err != nil {
+		return trxModel.ListRepo{}, err
+	}
+
+	return trxModel.ListRepo{
+		Data:         trxList,
+		TotalRecords: totalRecords,
+	}, nil
+
 }
